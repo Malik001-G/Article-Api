@@ -15,7 +15,7 @@ const wikiSchema = new mongoose.Schema({
     },
     author: {
         type: String,
-        required: [true, "Please provide Author name"],
+        required: [true, "Please provide author name"],
         minlenght: 3,
     },
     createdAt: {

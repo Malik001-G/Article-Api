@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "start:prod": "cross-env-shell NODE_ENV=production && nodemon server.js",
+    "start:dev": "cross-env-shell NODE_ENV=development && nodemon server.js"
   },
   "keywords": [],
   "author": "",

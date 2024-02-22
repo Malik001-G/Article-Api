@@ -1,44 +1,65 @@
 const Article = require("../models/wikiModel");
+const catchAsync = require("../utils/catchAsync");
 
-
-exports.getAllArticles = async (req, res, next) => {
-    try {
-        const articles = await Article.find();
-        res.status(200).json({
-            status: "success",
-            results: articles.length,
-            data: {
-                articles,
-            }
-        })
-    } catch (err) {
-        next(err)
-    }
-}
-exports.getOneArticle = async(req, res, next) => {
-    try {
-        const article = await Article.findOne({title: req.params.title})
-        if (!article) {
-            return next(new Error ("No article found with that title"))
+exports.getAllArticles = catchAsync(async (req, res, next) => {
+    const articles = await Article.find();
+    res.status(200).json({
+        status: "success",
+        results: articles.length,
+        data: {
+            articles,
         }
-        res.status(200).json({
-            status: "success",
-            data: {
-                article,
-            },
-        })
-    } catch (err) {
-     next(err)
+    });
+});
+
+
+exports.getOneArticle = catchAsync(async (req, res, next) => {
+   
+    const article = await Article.findOne({ title: req.params.title })
+    if (!article) {
+        return next(new Error("No article found with that title"))
     }
-}
-exports.createArticle = async (req, res) => {
-    try {
+    res.status(200).json({
+        status: "success",
+        data: {
+            article,
+        },
+    })
+});
+
+// exports.createArticle = async (req, res) => {
+//     try {
+//         const { title, content, author } = req.body
+//         if (!title || !content || !author) {
+//             return res
+//                 .status(400)
+//                 .json({status: "fail", message: "Missing required fields"})
+//         }
+//         const newArticle = await Article.create({ title, content, author });
+//         res.status(200).json({
+//             status: "success",
+//             data: {
+//                 article: newArticle,
+//             },
+//         })
+//    } catch (err) {
+//        console.log("Error creating article", err);
+//        res.status(500).json({status: "error", message: "Internal server error"})
+    
+//    }
+// }
+ 
+// ..... Before adding the catchAsync function
+
+exports.createArticle = catchAsync(async (req, res) => {
+    
         const { title, content, author } = req.body
-        if (!title || !content || !author) {
-            return res
-                .status(400)
-                .json({status: "fail", message: "Missing required fields"})
-        }
+        // if (!title || !content || !author) {
+        //     return new AppError("Missing required fields", 400)
+        //     // return res
+        //     //     .status(400)
+        //     //     .json({status: "fail", message: "Missing required fields"})
+        // }
         const newArticle = await Article.create({ title, content, author });
         res.status(200).json({
             status: "success",
@@ -46,42 +67,30 @@ exports.createArticle = async (req, res) => {
                 article: newArticle,
             },
         })
-   } catch (err) {
-       console.log("Error creating article", err);
-       res.status(500).json({status: "error", message: "Internal server error"})
-    
-   }
-}
-exports.updateArticle = async (req, res, next) => {
-   try {
-       const article = await Article.findByIdAndUpdate(req.params.id, req.body, {
-           new: true,
-           runValidators: true,
-       });
-       if (!article) {
-           return next(new Error ("No article found with that ID"))
-       }
-       res.status(200).json({
-           status: "success",
-           data: {
-               article,
-           },
-       })
-   } catch (err) {
-    next(err)
-   }
-}
-exports.deleteArticle = async (req, res) => {
-    try {
-        const article = await Article.findByIdAndDelete(req.params.id)
-        if (!article) {
-            return next(new Error ("No article found with that ID"))
-        }
-        res.status(204).json({
-            status: "success",
-            data: null,
-        })
-    } catch (err) {
-     next(err)
+})
+exports.updateArticle = catchAsync(async (req, res, next) => {
+    const article = await Article.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+    });
+    if (!article) {
+        return next(new Error("No article found with that ID"))
     }
-}
+    res.status(200).json({
+        status: "success",
+        data: {
+            article,
+        },
+    })
+});
+exports.deleteArticle = catchAsync(async (req, res) => {
+
+    const article = await Article.findByIdAndDelete(req.params.id)
+    if (!article) {
+        return next(new Error("No article found with that ID"))
+    }
+    res.status(204).json({
+        status: "success",
+        data: null,
+    })
+});
