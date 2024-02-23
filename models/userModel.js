@@ -1,48 +1,45 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, "Please tell us your name!"],
-        minLength: 3,
+  name: {
+    type: String,
+    required: [true, "Please enter your name"],
+    minlenght: 7,
+    maxlength: 15,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: [true, "Please enter your email"],
+    validate: [validator.isEmail, "Please enter a valid email"],
+  },
+  password: {
+    type: String,
+    required: [true, "Please provide a password"],
+    minlenght: 8,
+  },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Please confirm your password"],
+    validate: {
+      //This only works on create and save
+      validator: function (el) {
+        return el === this.password;
+      },
+      message: "Password does not match",
     },
-    email: {
-        type: String,
-        required: [true, "Please tell us your email!"],
-        unique: true,
-        lowercase: true,
-        validate: [validator.isEmail, "Please provide a valid email"]
-    },
-    photo: {
-        type: String,
-        default: "default.jpg"
-    },
-    password: {
-        type: String,
-        required: [true, "Please provide a password"],
-        minLength: 8,
-        select: false, // we don't want the password to show on Postman but it will show in our db
-    },
-    passwordConfirm: {
-        type: String,
-        required: [true, "Please confirm your password"],
-        validate: {
-            validator: (el) => {
-                return el === this.password
-            },
-            message: "Password does not match"
-        } // this function is a validator package to check the validity of the password
-    },
-    passwordChangedAt: Date,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+  },
+});
 
-    active: {
-        type: Boolean,
-        default: true,
-        select: false,
-    },
+userSchema.pre("save", async function (next) {
+  //Run only when password is modified
+  if (!this.isModified("password")) return next();
 
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+
+  next();
 });
 
 const User = mongoose.model("User", userSchema);

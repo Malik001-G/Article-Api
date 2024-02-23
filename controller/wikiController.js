@@ -1,6 +1,6 @@
 const Article = require("../models/wikiModel");
 const catchAsync = require("../utils/catchAsync");
-
+const AppError = require("../utils/appError")
 exports.getAllArticles = catchAsync(async (req, res, next) => {
     const articles = await Article.find();
     res.status(200).json({
@@ -17,7 +17,7 @@ exports.getOneArticle = catchAsync(async (req, res, next) => {
    
     const article = await Article.findOne({ title: req.params.title })
     if (!article) {
-        return next(new Error("No article found with that title"))
+        return next(new AppError("No article found with that title", 400))
     }
     res.status(200).json({
         status: "success",
@@ -51,7 +51,7 @@ exports.getOneArticle = catchAsync(async (req, res, next) => {
  
 // ..... Before adding the catchAsync function
 
-exports.createArticle = catchAsync(async (req, res) => {
+exports.createArticle = catchAsync(async (req, res, next) => {
     
         const { title, content, author } = req.body
         // if (!title || !content || !author) {
@@ -74,7 +74,7 @@ exports.updateArticle = catchAsync(async (req, res, next) => {
         runValidators: true,
     });
     if (!article) {
-        return next(new Error("No article found with that ID"))
+        return next(new AppError("No article found with that ID", 400))
     }
     res.status(200).json({
         status: "success",
@@ -83,11 +83,11 @@ exports.updateArticle = catchAsync(async (req, res, next) => {
         },
     })
 });
-exports.deleteArticle = catchAsync(async (req, res) => {
+exports.deleteArticle = catchAsync(async (req, res, next) => {
 
     const article = await Article.findByIdAndDelete(req.params.id)
     if (!article) {
-        return next(new Error("No article found with that ID"))
+        return next(new AppError("No article found with that ID", 400))
     }
     res.status(204).json({
         status: "success",
