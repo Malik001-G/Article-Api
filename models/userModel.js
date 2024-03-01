@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema({
       message: "Password does not match",
     },
   },
+  role: {
+    type: String,
+    enum: ["user", "admin", "author"], // a validator to check if what you sent is part of the parameter in the list
+    default: "user", //deault role to user
+  },
+  passwordChangedAt: Date, // this is used to verify when a user changes password
 });
 
 userSchema.pre("save", async function (next) {
@@ -44,11 +50,24 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+//Used to compare the inputted password on Login and the password in the db (when signing up) already
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) { // the iat in the token
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt( // changes the date to integer 
+      this,
+      passwordChangedAt.getTime() / 1000, //changes the time to microseconds
+      10
+    );
+    console.log(this.passwordChangedAt, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp; // Jwttimestamp which is the time the token was created. Make the token invalid when the time the token was created is less when the password was changed
+  }
 };
 
 const User = mongoose.model("User", userSchema);
