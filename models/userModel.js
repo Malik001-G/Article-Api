@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto")
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -38,6 +39,8 @@ const userSchema = new mongoose.Schema({
     default: "user", //deault role to user
   },
   passwordChangedAt: Date, // this is used to verify when a user changes password
+  passwordResetToken: String, // the token that is sent to the user when they click on forget password
+  passwordResetExpires: Date, 
 });
 
 userSchema.pre("save", async function (next) {
@@ -49,6 +52,12 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
+
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+})
 
 //Used to compare the inputted password on Login and the password in the db (when signing up) already
 userSchema.methods.correctPassword = async function (
@@ -69,6 +78,19 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) { // the iat i
     return JWTTimestamp < changedTimestamp; // Jwttimestamp which is the time the token was created. Make the token invalid when the time the token was created is less when the password was changed
   }
 };
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex") // crypto is used to create a random token and it is provided by node js we don't need to install it, just require it
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  console.log({ resetToken }, this.passwordResetToken);
+  
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // setting the token to expire after 10 minutes
+  return resetToken;
+}
 
 const User = mongoose.model("User", userSchema);
 
