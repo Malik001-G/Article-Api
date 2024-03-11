@@ -136,7 +136,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
       "host"
     )}/api/v1/resetPassword/${resetToken}`
     const message = `Forgot password ?? Submit a patch request with your new password and passwordConfirm to: ${resetURL}.\n if you didn't forget your password kindly ignore this message`
-  console.log(message);
+    console.log(message);
     await sendEmail({
       email: user.email,
       subject: "Your Password Reset Token (Valid for just 10 minutes)",
@@ -167,7 +167,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  //2) if token hasn/t expired
+  //2) if token hasn't expired
   if (!user) {
     return next(new AppError("Token is invalid or has expired", 404))
   }

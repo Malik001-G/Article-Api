@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["user", "admin", "author"], // a validator to check if what you sent is part of the parameter in the list
-    default: "user", //deault role to user
+    default: "user", //default role to user
   },
   passwordChangedAt: Date, // this is used to verify when a user changes password
   passwordResetToken: String, // the token that is sent to the user when they click on forget password
