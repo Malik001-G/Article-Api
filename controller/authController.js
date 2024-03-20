@@ -22,6 +22,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm, // we are passing the data they input to the body
+    role: req.body.role
   });
 
   // the jwt token that was created up
@@ -61,6 +62,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   //3) check if everything is okay and send token to client
   const token = signToken(user._id);
+  
   res.status(200).json({
     status: "success",
     token,
@@ -117,6 +119,7 @@ exports.restrictTo = (...roles) => {
       return next(
         new AppError("You do not have permission to perform this action", 403)
       );
+      next();
     }
   };
 };
@@ -151,7 +154,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-
     return next(new AppError("there was an error sending mail"),500);
   }
 });

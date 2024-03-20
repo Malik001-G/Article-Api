@@ -85,6 +85,8 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     console.log(this.passwordChangedAt, JWTTimestamp);
     return JWTTimestamp < changedTimestamp; // Jwttimestamp which is the time the token was created. Make the token invalid when the time the token was created is less when the password was changed
   }
+  //false means not changed
+  return false;
 };
 
 userSchema.methods.createPasswordResetToken = function () {
