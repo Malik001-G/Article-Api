@@ -1,24 +1,64 @@
 const User = require("../models/userModel");
-const catchAsync = require("../utils/catchAsync")
+const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
+//Get all users
+exports.getAllUsers = catchAsync(async (req, res) => {
+  const users = await User.find();
+  res.status(200).json({
+    status: "success",
+    results: users.length,
+    data: {
+      users,
+    },
+  });
+});
 
-exports.getAllUsers = async (req, res) => {
-  res.send("All users");
-};
-exports.getUser = async (req, res) => {
-  res.send("One User");
-};
+//Get One user
+exports.getUser = catchAsync(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return next(new AppError("No user found with that ID", 400));
+  }
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
+});
+
 exports.createUser = async (req, res) => {
   res.send("User Created");
 };
-exports.updateUser = async (req, res) => {
-  res.send("User updated");
-};
-exports.deleteUser = async (req, res) => {
-  res.send("User deleted");
-};
 
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  if (!user) {
+    return next(new AppError("No user found with that ID", 400));
+  }
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
+});
+
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) {
+    return next(new AppError("No user found with that ID", 400));
+  }
+  res.status(204).json({
+    status: "success",
+    data: null,
+    message: "User Deleted",
+  });
+});
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -33,7 +73,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
-        "This route is not for password updates. Please use /updateMyPassword", 400
+        "This route is not for password updates. Please use /updateMyPassword",
+        400
       )
     );
   }
@@ -50,8 +91,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       user: updateUser,
-    }
-  })
+    },
+  });
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
@@ -59,6 +100,6 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 
   res.status(204).json({
     status: "success",
-    data: "null"
+    data: "null",
   });
 });
